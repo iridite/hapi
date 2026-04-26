@@ -29,7 +29,7 @@ import {
     saveNewSessionFormDraft,
     shouldRestoreNewSessionFormDraft
 } from './newSessionFormDraft'
-import type { AgentType, ClaudeEffort, CodexReasoningEffort, SessionType } from './types'
+import type { AgentType, ClaudeEffort, ClaudePermissionMode, CodexReasoningEffort, SessionType } from './types'
 import { ActionButtons } from './ActionButtons'
 import { AgentSelector } from './AgentSelector'
 import { DirectorySection } from './DirectorySection'
@@ -39,14 +39,14 @@ import { OpencodeModelSelector } from './OpencodeModelSelector'
 import { ClaudeEffortSelector } from './ClaudeEffortSelector'
 import { shouldEnableOpencodeModelDiscovery } from './opencodeModelsGate'
 import { ReasoningEffortSelector } from './ReasoningEffortSelector'
+import { PermissionModeSelector } from './PermissionModeSelector'
 import {
     loadPreferredAgent,
-    loadPreferredYoloMode,
+    loadPreferredPermissionMode,
     savePreferredAgent,
-    savePreferredYoloMode,
+    savePreferredPermissionMode,
 } from './preferences'
 import { SessionTypeSelector } from './SessionTypeSelector'
-import { YoloToggle } from './YoloToggle'
 import { formatRunnerSpawnError } from '../../utils/formatRunnerSpawnError'
 
 export function NewSession(props: {
@@ -76,7 +76,7 @@ export function NewSession(props: {
     const pendingCursorBaseRef = useRef<string | null>(null)
     const [effort, setEffort] = useState<ClaudeEffort>('auto')
     const [modelReasoningEffort, setModelReasoningEffort] = useState<CodexReasoningEffort>('default')
-    const [yoloMode, setYoloMode] = useState(loadPreferredYoloMode)
+    const [permissionMode, setPermissionMode] = useState<ClaudePermissionMode>(loadPreferredPermissionMode)
     const [sessionType, setSessionType] = useState<SessionType>('simple')
     const [worktreeName, setWorktreeName] = useState('')
     const [directoryCreationConfirmed, setDirectoryCreationConfirmed] = useState(false)
@@ -103,8 +103,8 @@ export function NewSession(props: {
     }, [agent])
 
     useEffect(() => {
-        savePreferredYoloMode(yoloMode)
-    }, [yoloMode])
+        savePreferredPermissionMode(permissionMode)
+    }, [permissionMode])
 
     useEffect(() => {
         if (props.initialDirectory !== undefined) {
@@ -570,7 +570,8 @@ export function NewSession(props: {
                 model: resolvedModel,
                 effort: resolvedEffort,
                 modelReasoningEffort: resolvedModelReasoningEffort,
-                yolo: yoloMode,
+                yolo: permissionMode === 'bypassPermissions',
+                permissionMode: agent === 'claude' ? permissionMode : undefined,
                 sessionType,
                 worktreeName: sessionType === 'worktree' ? (worktreeName.trim() || undefined) : undefined
             })
@@ -722,10 +723,11 @@ export function NewSession(props: {
                 isDisabled={isFormDisabled}
                 onChange={setModelReasoningEffort}
             />
-            <YoloToggle
-                yoloMode={yoloMode}
+            <PermissionModeSelector
+                agent={agent}
+                permissionMode={permissionMode}
                 isDisabled={isFormDisabled}
-                onToggle={setYoloMode}
+                onPermissionModeChange={setPermissionMode}
             />
 
             {(error ?? spawnError) ? (

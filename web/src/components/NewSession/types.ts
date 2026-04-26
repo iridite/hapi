@@ -4,9 +4,13 @@ import {
     CLAUDE_MODEL_LABELS,
     CLAUDE_MODEL_PRESETS,
     GEMINI_MODEL_LABELS,
-    GEMINI_MODEL_PRESETS
+    GEMINI_MODEL_PRESETS,
+    CLAUDE_PERMISSION_MODES,
+    PERMISSION_MODE_LABELS
 } from '@hapi/protocol'
-import type { AgentFlavor, ClaudeEffortLevel } from '@hapi/protocol'
+import type { AgentFlavor, ClaudeEffortLevel, ClaudePermissionMode } from '@hapi/protocol'
+
+export type { ClaudePermissionMode }
 
 export type AgentType = AgentFlavor
 export type SessionType = 'simple' | 'worktree'
@@ -53,3 +57,6 @@ export const CLAUDE_EFFORT_OPTIONS: { value: ClaudeEffort; label: string }[] = [
     { value: 'auto', label: 'Auto' },
     ...CLAUDE_EFFORT_LEVELS.map((value) => ({ value, label: CLAUDE_EFFORT_LABELS[value] })),
 ]
+
+export const CLAUDE_PERMISSION_MODE_OPTIONS: { value: ClaudePermissionMode; label: string }[] =
+    CLAUDE_PERMISSION_MODES.map((mode) => ({ value: mode, label: PERMISSION_MODE_LABELS[mode] }))
