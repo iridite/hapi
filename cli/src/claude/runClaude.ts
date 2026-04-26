@@ -22,6 +22,7 @@ import { formatMessageWithAttachments } from '@/utils/attachmentFormatter';
 import { normalizeClaudeSessionModel } from './model';
 import { normalizeClaudeSessionEffort } from './effort';
 import { getInvokedCwd } from '@/utils/invokedCwd';
+import { readClaudeSettings } from '@/claude/utils/claudeSettings';
 
 export interface StartOptions {
     model?: string
@@ -168,7 +169,9 @@ export async function runClaude(options: StartOptions = {}): Promise<void> {
     }));
 
     // Forward messages to the queue
-    let currentPermissionMode: PermissionMode = options.permissionMode ?? 'default';
+    const claudeSettings = readClaudeSettings();
+    const claudeDefaultMode = claudeSettings?.permissions?.defaultMode as PermissionMode | undefined;
+    let currentPermissionMode: PermissionMode = options.permissionMode ?? claudeDefaultMode ?? 'default';
     let currentModel: SessionModel = initialModel;
     let currentEffort: SessionEffort = initialEffort;
     let currentFallbackModel: string | undefined = undefined; // Track current fallback model
