@@ -254,9 +254,6 @@ export default {
   'newSession.opencodeModel.default': 'Default',
   'newSession.reasoningEffort': 'Reasoning effort',
   'newSession.permissionMode': 'Permission Mode',
-  'newSession.yolo': 'YOLO mode',
-  'newSession.yolo.title': 'Bypass approvals and sandbox',
-  'newSession.yolo.desc': 'Uses dangerous agent flags when spawning.',
   'newSession.create': 'Create',
   'newSession.creating': 'Creating…',
 

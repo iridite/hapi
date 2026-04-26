@@ -3,11 +3,11 @@ import {
     MachinePathsExistsRequestSchema,
     SpawnSessionRequestSchema
 } from '@hapi/protocol'
+import type { PermissionMode } from '@hapi/protocol'
 import { Hono } from 'hono'
 import type { SyncEngine } from '../../sync/syncEngine'
 import type { WebAppEnv } from '../middleware/auth'
 import { requireMachine } from './guards'
-
 export function createMachinesRoutes(getSyncEngine: () => SyncEngine | null): Hono<WebAppEnv> {
     const app = new Hono<WebAppEnv>()
 
@@ -50,7 +50,8 @@ export function createMachinesRoutes(getSyncEngine: () => SyncEngine | null): Ho
             parsed.data.sessionType,
             parsed.data.worktreeName,
             undefined,
-            parsed.data.effort
+            parsed.data.effort,
+            parsed.data.permissionMode as PermissionMode | undefined
         )
         return c.json(result)
     })
