@@ -11,7 +11,7 @@ export const AGENT_FLAVORS = ['claude', 'codex', 'cursor', 'gemini', 'kimi', 'op
 export type AgentFlavor = typeof AGENT_FLAVORS[number]
 export const AgentFlavorSchema = z.enum(AGENT_FLAVORS)
 
-export const CLAUDE_PERMISSION_MODES = ['default', 'acceptEdits', 'auto', 'bypassPermissions', 'plan'] as const
+export const CLAUDE_PERMISSION_MODES = ['default', 'acceptEdits', 'auto', 'bypassPermissions', 'plan', 'dontAsk'] as const
 export type ClaudePermissionMode = typeof CLAUDE_PERMISSION_MODES[number]
 
 export const CODEX_PERMISSION_MODES = ['default', 'read-only', 'safe-yolo', 'yolo'] as const
@@ -38,6 +38,7 @@ export const PERMISSION_MODES = [
     'auto',
     'bypassPermissions',
     'plan',
+    'dontAsk',
     'ask',
     'debug',
     'read-only',
@@ -52,9 +53,10 @@ export const PERMISSION_MODE_LABELS: Record<PermissionMode, string> = {
     acceptEdits: 'Accept Edits',
     auto: 'Auto',
     plan: 'Plan Mode',
+    dontAsk: "Don't Ask",
     ask: 'Ask Mode',
     debug: 'Debug Mode',
-    bypassPermissions: 'Yolo',
+    bypassPermissions: 'Bypass Permissions',
     'read-only': 'Read Only',
     'safe-yolo': 'Safe Yolo',
     yolo: 'Yolo'
@@ -67,6 +69,7 @@ export const PERMISSION_MODE_TONES: Record<PermissionMode, PermissionModeTone> =
     acceptEdits: 'warning',
     auto: 'warning',
     plan: 'info',
+    dontAsk: 'danger',
     ask: 'info',
     debug: 'info',
     bypassPermissions: 'danger',
