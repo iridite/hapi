@@ -163,6 +163,12 @@ export default {
   'chat.terminal': 'Terminal',
   'chat.switchRemote': 'Switch to remote mode',
 
+  // Codex review
+  'codexReview.title': 'Codex review',
+  'codexReview.findings': '{count} findings',
+  'codexReview.confidence': 'Confidence {value}',
+  'codexReview.location.missing': 'No location',
+
   // Terminal
   'terminal.commandName': 'Command',
   'terminal.commandMessage': 'Command message',

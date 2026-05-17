@@ -11,6 +11,7 @@ import { getAssistantCopyText } from '@/components/AssistantChat/messages/assist
 import { getConversationMessageAnchorId } from '@/chat/outline'
 import { MessageMetadata } from '@/components/AssistantChat/messages/MessageMetadata'
 import { isNestedInteractiveEvent } from '@/components/AssistantChat/messages/metadataToggle'
+import { CodexReviewCard } from '@/components/AssistantChat/messages/CodexReviewCard'
 
 const TOOL_COMPONENTS = {
     Fallback: HappyToolMessage
@@ -34,6 +35,10 @@ export function HappyAssistantMessage() {
     const isCliOutput = useAssistantState(({ message }) => {
         const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
         return custom?.kind === 'cli-output'
+    })
+    const codexReview = useAssistantState(({ message }) => {
+        const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
+        return custom?.kind === 'codex-review' ? custom.review : undefined
     })
     const cliText = useAssistantState(({ message }) => {
         const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
@@ -98,6 +103,51 @@ export function HappyAssistantMessage() {
                         className="mt-1"
                     />
                 )}
+            </MessagePrimitive.Root>
+        )
+    }
+
+    if (codexReview) {
+        return (
+            <MessagePrimitive.Root
+                id={getConversationMessageAnchorId(messageId)}
+                className={`${rootClass} ${copyText ? 'group/msg' : ''} scroll-mt-4`}
+            >
+                <div className="flex items-start gap-2">
+                    <div
+                        className={hasMetadata ? 'min-w-0 flex-1 cursor-pointer' : 'min-w-0 flex-1'}
+                        onClick={hasMetadata ? toggleMetadata : undefined}
+                        onKeyDown={hasMetadata ? onMetadataKeyDown : undefined}
+                        role={hasMetadata ? 'button' : undefined}
+                        tabIndex={hasMetadata ? 0 : undefined}
+                        aria-expanded={hasMetadata ? showMetadata : undefined}
+                    >
+                        <CodexReviewCard review={codexReview} />
+                        {showMetadata && (
+                            <MessageMetadata
+                                invokedAt={invokedAt}
+                                durationMs={durationMs}
+                                usage={usage}
+                                model={messageModel ?? null}
+                                className="mt-1"
+                            />
+                        )}
+                    </div>
+                    {copyText ? (
+                        <div className="happy-message-actions-first-line hidden sm:flex shrink-0 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                            <button
+                                type="button"
+                                title="Copy"
+                                className="p-0.5 rounded hover:bg-[var(--app-subtle-bg)] transition-colors"
+                                onClick={() => copy(copyText)}
+                            >
+                                {copied
+                                    ? <CheckIcon className="h-3.5 w-3.5 text-green-500" />
+                                    : <CopyIcon className="h-3.5 w-3.5 text-[var(--app-hint)]" />}
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
             </MessagePrimitive.Root>
         )
     }

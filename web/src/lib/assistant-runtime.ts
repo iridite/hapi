@@ -3,13 +3,13 @@ import type { AppendMessage, AttachmentAdapter, ThreadMessageLike } from '@assis
 import { useExternalMessageConverter, useExternalStoreRuntime } from '@assistant-ui/react'
 import { safeStringify } from '@hapi/protocol'
 import { renderEventLabel } from '@/chat/presentation'
-import type { ChatBlock, CliOutputBlock, UsageData } from '@/chat/types'
+import type { ChatBlock, CliOutputBlock, CodexReview, UsageData } from '@/chat/types'
 import type { AgentEvent, ToolCallBlock } from '@/chat/types'
 import type { ToolGroupBlock, VisibleChatBlock } from '@/chat/toolGroups'
 import type { AttachmentMetadata, MessageStatus as HappyMessageStatus, Session } from '@/types/api'
 
 export type HappyChatMessageMetadata = {
-    kind: 'user' | 'assistant' | 'tool' | 'event' | 'cli-output'
+    kind: 'user' | 'assistant' | 'tool' | 'event' | 'cli-output' | 'codex-review'
     status?: HappyMessageStatus
     localId?: string | null
     originalText?: string
@@ -21,6 +21,29 @@ export type HappyChatMessageMetadata = {
     durationMs?: number
     usage?: UsageData
     model?: string | null
+    review?: CodexReview
+}
+
+function formatCodexReviewText(review: CodexReview): string {
+    const lines = ['Codex review']
+    if (review.overallCorrectness) {
+        lines.push(`Overall: ${review.overallCorrectness}`)
+    }
+    if (review.overallExplanation) {
+        lines.push('', review.overallExplanation)
+    }
+    if (review.findings.length > 0) {
+        lines.push('', 'Findings:')
+        for (const finding of review.findings) {
+            const priority = finding.priority === null ? '' : `[P${finding.priority}] `
+            const location = finding.filePath
+                ? ` (${finding.filePath}${finding.lineStart === null ? '' : `:${finding.lineStart}${finding.lineEnd !== null && finding.lineEnd !== finding.lineStart ? `-${finding.lineEnd}` : ''}`})`
+                : ''
+            lines.push(`- ${priority}${finding.title}${location}`)
+            lines.push(`  ${finding.body}`)
+        }
+    }
+    return lines.join('\n')
 }
 
 function toThreadMessageLike(block: VisibleChatBlock): ThreadMessageLike {
@@ -99,6 +122,26 @@ function toThreadMessageLike(block: VisibleChatBlock): ThreadMessageLike {
                     durationMs: block.durationMs,
                     usage: block.usage,
                     model: block.model
+                } satisfies HappyChatMessageMetadata
+            }
+        }
+    }
+
+    if (block.kind === 'codex-review') {
+        const messageId = `review:${block.id}`
+        return {
+            role: 'assistant',
+            id: messageId,
+            createdAt: new Date(block.createdAt),
+            content: [{ type: 'text', text: formatCodexReviewText(block.review) }],
+            metadata: {
+                custom: {
+                    kind: 'codex-review',
+                    invokedAt: block.invokedAt,
+                    durationMs: block.durationMs,
+                    usage: block.usage,
+                    model: block.model,
+                    review: block.review
                 } satisfies HappyChatMessageMetadata
             }
         }

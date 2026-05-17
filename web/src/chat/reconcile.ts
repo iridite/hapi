@@ -6,6 +6,7 @@ import type {
     ChatBlock,
     GeneratedImageBlock,
     CliOutputBlock,
+    CodexReviewBlock,
     ToolCallBlock,
     ToolPermission,
     UserTextBlock,
@@ -145,6 +146,13 @@ function areGeneratedImageBlocksEqual(left: GeneratedImageBlock, right: Generate
         && left.meta === right.meta
 }
 
+function areCodexReviewBlocksEqual(left: CodexReviewBlock, right: CodexReviewBlock): boolean {
+    return left.review === right.review
+        && left.localId === right.localId
+        && left.createdAt === right.createdAt
+        && left.meta === right.meta
+}
+
 function areAgentEventBlocksEqual(left: AgentEventBlock, right: AgentEventBlock): boolean {
     return left.createdAt === right.createdAt
         && left.meta === right.meta
@@ -226,6 +234,11 @@ function reconcileBlock(block: ChatBlock, prevById: ChatBlocksById): ChatBlock {
     if (block.kind === 'generated-image') {
         const prevBlock = prev as GeneratedImageBlock
         return areGeneratedImageBlocksEqual(prevBlock, block) ? prevBlock : block
+    }
+
+    if (block.kind === 'codex-review') {
+        const prevBlock = prev as CodexReviewBlock
+        return areCodexReviewBlocksEqual(prevBlock, block) ? prevBlock : block
     }
 
     const prevBlock = prev as AgentEventBlock
