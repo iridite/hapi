@@ -1,0 +1,57 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # 每天 UTC 03:00（北京时间 11:00）
+  workflow_dispatch:        # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add upstream
+        run: git remote add upstream https://github.com/tiann/hapi.git
+
+      - name: Fetch upstream
+        run: git fetch upstream main
+
+      - name: Try rebase
+        id: rebase
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          if git rebase upstream/main; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            git rebase --abort
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push if rebase succeeded
+        if: steps.rebase.outputs.success == 'true'
+        run: git push origin main --force-with-lease
+
+      - name: Open conflict PR if rebase failed
+        if: steps.rebase.outputs.success == 'false'
+        run: |
+          BRANCH="sync/upstream-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git merge upstream/main --no-edit --allow-unrelated-histories || true
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "chore: manual sync needed — rebase conflict with upstream $(date +%Y-%m-%d)" \
+            --body "Automated rebase failed. Upstream has diverged. Resolve conflicts manually and merge this PR." \
+            --head "$BRANCH" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
