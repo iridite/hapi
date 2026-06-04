@@ -480,6 +480,8 @@ export default {
   'settings.voice.autoDetect': 'Auto-detect',
   'settings.voice.voice': 'Voice',
   'settings.voice.voiceDefault': 'Default',
+  'settings.voice.proactive': 'Start voice session with summary',
+  'settings.voice.proactive.description': 'When on, starting a voice session opens with a spoken summary of current agent activity. When off, the assistant greets you and waits for you to speak.',
   'settings.about.title': 'About',
   'settings.about.website': 'Website',
   'settings.about.appVersion': 'App Version',
