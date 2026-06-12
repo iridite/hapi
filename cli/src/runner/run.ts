@@ -1099,7 +1099,8 @@ export function buildCliArgs(
       args.push('--resume', options.resumeSessionId);
     }
   }
-  args.push('--hapi-starting-mode', 'remote', '--started-by', 'runner');
+  const startingMode = options.startingMode || 'remote';
+  args.push('--hapi-starting-mode', startingMode, '--started-by', 'runner');
   if (options.model) {
     args.push('--model', options.model);
   }
@@ -1121,5 +1122,9 @@ export function buildCliArgs(
       args.push('--yolo');
     }
   }
+  // PTY tool approvals are bridged from a PreToolUse hook to the web (see
+  // ptyPermissionHandler + generateHookSettings), so a default-mode PTY session
+  // prompts for permission just like the SDK path — no implicit bypass. Explicit
+  // YOLO (the new-session toggle) opts into --yolo via `yolo`.
   return args;
 }
