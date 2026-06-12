@@ -77,6 +77,8 @@ export function NewSession(props: {
     const [effort, setEffort] = useState<ClaudeEffort>('auto')
     const [modelReasoningEffort, setModelReasoningEffort] = useState<CodexReasoningEffort>('default')
     const [permissionMode, setPermissionMode] = useState<ClaudePermissionMode>(loadPreferredPermissionMode)
+    // Default to 'remote' (the stable SDK path); PTY is an explicit opt-in via the checkbox below.
+    const [startingMode, setStartingMode] = useState<'remote' | 'pty'>('remote')
     const [sessionType, setSessionType] = useState<SessionType>('simple')
     const [worktreeName, setWorktreeName] = useState('')
     const [directoryCreationConfirmed, setDirectoryCreationConfirmed] = useState(false)
@@ -105,6 +107,10 @@ export function NewSession(props: {
     useEffect(() => {
         savePreferredPermissionMode(permissionMode)
     }, [permissionMode])
+
+    useEffect(() => {
+        setStartingMode('remote')
+    }, [agent])
 
     useEffect(() => {
         if (props.initialDirectory !== undefined) {
@@ -144,9 +150,10 @@ export function NewSession(props: {
         setCursorSelectedBase(draft.cursorSelectedBase)
         setEffort(draft.effort)
         setModelReasoningEffort(draft.modelReasoningEffort)
-        setYoloMode(draft.yoloMode)
+        setPermissionMode(draft.permissionMode ?? 'default')
         setSessionType(draft.sessionType)
         setWorktreeName(draft.worktreeName)
+        setStartingMode(draft.startingMode ?? 'remote')
         clearNewSessionFormDraft()
     }, [
         props.initialDirectory,
@@ -343,6 +350,7 @@ export function NewSession(props: {
             cwdExists: deferredDirectoryExists,
         })
     })
+
     useEffect(() => {
         // Auto-pick the OpenCode default model when discovery finishes, so the
         // form has a sensible value if the user hits Enter without scrolling.
@@ -454,9 +462,10 @@ export function NewSession(props: {
             machineId,
             effort,
             modelReasoningEffort,
-            yoloMode,
+            permissionMode,
             sessionType,
-            worktreeName
+            worktreeName,
+            startingMode: agent === 'claude' ? startingMode : undefined
         })
         props.onChooseFolder({ machineId, directory: trimmedDirectory })
     }, [
@@ -467,7 +476,7 @@ export function NewSession(props: {
         machineId,
         effort,
         modelReasoningEffort,
-        yoloMode,
+        permissionMode,
         sessionType,
         worktreeName,
         trimmedDirectory
@@ -574,8 +583,10 @@ export function NewSession(props: {
                 yolo: claudePermissionMode === 'bypassPermissions',
                 permissionMode: claudePermissionMode,
                 sessionType,
-                worktreeName: sessionType === 'worktree' ? (worktreeName.trim() || undefined) : undefined
+                worktreeName: sessionType === 'worktree' ? (worktreeName.trim() || undefined) : undefined,
+                startingMode: agent === 'claude' ? startingMode : undefined
             })
+
 
             if (result.type === 'success') {
                 haptic.notification('success')
@@ -718,6 +729,23 @@ export function NewSession(props: {
                 isDisabled={isFormDisabled}
                 onEffortChange={setEffort}
             />
+            {agent === 'claude' && (
+                <div className="flex flex-col gap-1 px-3 py-3">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={startingMode === 'pty'}
+                            onChange={(e) => setStartingMode(e.target.checked ? 'pty' : 'remote')}
+                            disabled={isFormDisabled}
+                            className="accent-[var(--app-link)]"
+                        />
+                        <span className="text-sm text-[var(--app-fg)]">{t('newSession.pty.title')}</span>
+                    </label>
+                    <span className="text-xs text-[var(--app-hint)] pl-5">
+                        {t('newSession.pty.desc')}
+                    </span>
+                </div>
+            )}
             <ReasoningEffortSelector
                 agent={agent}
                 value={modelReasoningEffort}
