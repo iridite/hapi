@@ -1101,13 +1101,18 @@ export function buildCliArgs(
           ? 'kimi'
           : agent === 'opencode'
             ? 'opencode'
-            : 'claude';
+            : agent === 'pi'
+              ? 'pi'
+              : 'claude';
   const args = [agentCommand];
   if (options.resumeSessionId) {
     if (agent === 'codex') {
       args.push('resume', options.resumeSessionId);
     } else if (agent === 'cursor') {
       args.push('--resume', options.resumeSessionId);
+    } else if (agent === 'pi') {
+      // Pi uses --session-id for exact session resume (RPC mode)
+      args.push('--session-id', options.resumeSessionId);
     } else {
       args.push('--resume', options.resumeSessionId);
     }
@@ -1116,7 +1121,7 @@ export function buildCliArgs(
   if (options.model) {
     args.push('--model', options.model);
   }
-  if (options.effort && agent === 'claude') {
+  if (options.effort && (agent === 'claude' || agent === 'pi')) {
     args.push('--effort', options.effort);
   }
   if (options.modelReasoningEffort && (agent === 'codex' || agent === 'opencode')) {
@@ -1125,10 +1130,14 @@ export function buildCliArgs(
   if (options.serviceTier && agent === 'codex') {
     args.push('--service-tier', options.serviceTier);
   }
-  if (options.permissionMode && (PERMISSION_MODES as readonly string[]).includes(options.permissionMode)) {
-    args.push('--permission-mode', options.permissionMode);
-  } else if (yolo) {
-    args.push('--yolo');
+  // Pi RPC mode has no permission switching; never pass these flags to it
+  // (the Pi parser rejects --permission-mode and ignores --yolo).
+  if (agent !== 'pi') {
+    if (options.permissionMode && (PERMISSION_MODES as readonly string[]).includes(options.permissionMode)) {
+      args.push('--permission-mode', options.permissionMode);
+    } else if (yolo) {
+      args.push('--yolo');
+    }
   }
   return args;
 }

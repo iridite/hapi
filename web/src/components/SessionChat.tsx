@@ -8,6 +8,7 @@ import type {
     DecryptedMessage,
     PermissionMode,
     Session,
+    PiModelSummary,
     SlashCommand
 } from '@/types/api'
 import type { ChatBlock, NormalizedMessage } from '@/chat/types'
@@ -53,6 +54,7 @@ import {
 } from '@/lib/sessionChatCursorModel'
 import { buildCursorEffortPickerOptions, resolveCursorVariantOptions } from '@/lib/cursorModelOptions'
 import { useOpencodeModels } from '@/hooks/queries/useOpencodeModels'
+import { usePiModels } from '@/hooks/queries/usePiModels'
 import { useOpencodeReasoningEffortOptions } from '@/hooks/queries/useOpencodeReasoningEffortOptions'
 import { useVoiceOptional } from '@/lib/voice-context'
 import { VoiceBackendSession, registerSessionStore, registerVoiceHooksStore, voiceHooks } from '@/realtime'
@@ -466,6 +468,17 @@ function SessionChatInner(props: SessionChatProps) {
         sessionCliModelSkus,
         props.session.model
     ])
+    const piModelsState = usePiModels({
+        api: props.api,
+        sessionId: props.session.id,
+        enabled: agentFlavor === 'pi' && props.session.active
+    })
+    // Fallback to cached models from metadata when session is inactive
+    const piMetadata = props.session.metadata as Record<string, unknown> | null
+    const piCachedModels = piMetadata?.piAvailableModels as PiModelSummary[] | undefined ?? []
+    // Provider-qualified selected model — disambiguates when two providers
+    // share a modelId (hub persists this alongside the legacy modelId string).
+    const piSelectedModel = piMetadata?.piSelectedModel as { provider: string; modelId: string } | null | undefined
     const cursorCatalogReadinessArgs = useMemo(() => ({
         sessionLoading: cursorModelsState.isLoading,
         machineLoading: machineCursorModelsState.isLoading,
@@ -552,7 +565,6 @@ function SessionChatInner(props: SessionChatProps) {
             ? resolveSessionCursorVariantSelectValue(props.session.model, cursorModelEffortOptions)
             : null
     ), [agentFlavor, cursorModelEffortOptions, props.session.model])
-
     const {
         abortSession,
         switchSession,
@@ -792,7 +804,7 @@ function SessionChatInner(props: SessionChatProps) {
     }, [setCollaborationMode, props.onRefresh, haptic])
 
     // Model mode change handler
-    const handleModelChange = useCallback(async (model: string | null) => {
+    const handleModelChange = useCallback(async (model: { provider: string; modelId: string } | string | null) => {
         try {
             await setModel(model)
             haptic.notification('success')
@@ -1015,7 +1027,11 @@ function SessionChatInner(props: SessionChatProps) {
             <AssistantRuntimeProvider runtime={runtime}>
                 <div className="relative flex min-h-0 flex-1 flex-col">
                     <HappyThread
-                        key={props.session.id}
+                        // Key with prefix: different components under the same session
+                        // (thread, scratchlist, composer) must have distinct keys to avoid
+                        // React reconciliation issues when switching sessions rapidly.
+                        // Without prefixes, React may reuse the wrong component's DOM/localStorage.
+                        key={`thread-${props.session.id}`}
                         api={props.api}
                         sessionId={props.session.id}
                         metadata={props.session.metadata}
@@ -1076,7 +1092,7 @@ function SessionChatInner(props: SessionChatProps) {
                     </div>
 
                     <HappyComposer
-                        key={props.session.id}
+                        key={`composer-${props.session.id}`}
                         sessionId={props.session.id}
                         disabled={props.isSending}
                         pendingSchedule={pendingSchedule}
@@ -1102,8 +1118,16 @@ function SessionChatInner(props: SessionChatProps) {
                                     )
                                     : agentFlavor === 'opencode'
                                         ? opencodeModelOptions
+                                        // Pi uses its own provider-qualified picker (piModels prop).
+                                        // Feeding piModelOptions here would make the generic Ctrl/Cmd+M
+                                        // cycler (getNextModelForFlavor) post a bare modelId string,
+                                        // which loses the provider and can pick the wrong cached
+                                        // match or throw in runPi. undefined makes the shortcut a no-op
+                                        // so Pi model changes go through the dedicated picker only.
                                         : undefined
                         }
+                        piModels={agentFlavor === 'pi' ? (piModelsState.availableModels.length > 0 ? piModelsState.availableModels : piCachedModels) : undefined}
+                        piSelectedModel={agentFlavor === 'pi' ? piSelectedModel : undefined}
                         availableModelReasoningEffortOptions={
                             agentFlavor === 'opencode' && opencodeReasoningEffortState.options.length > 0
                                 ? opencodeReasoningEffortState.options
@@ -1153,9 +1177,11 @@ function SessionChatInner(props: SessionChatProps) {
                                         && !cursorModelsState.error
                                         && cursorPicker
                                         && cursorPicker.modelOptions.length > 0
-                                        ? handleCursorBaseModelChange
+                                        ? ((model) => handleCursorBaseModelChange(typeof model === 'string' ? model : model?.modelId ?? null))
                                         : undefined)
-                                    : handleModelChange
+                                    : agentFlavor === 'pi'
+                                        ? (props.session.active && !piModelsState.error ? handleModelChange : undefined)
+                                        : handleModelChange
                         }
                         onModelEffortChange={
                             agentFlavor === 'cursor'
