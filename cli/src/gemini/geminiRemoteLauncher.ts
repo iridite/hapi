@@ -10,6 +10,7 @@ import type { PermissionMode } from './types';
 import { createGeminiBackend } from './utils/geminiBackend';
 import { GeminiPermissionHandler } from './utils/permissionHandler';
 import { resolveGeminiRuntimeConfig } from './utils/config';
+import { HAPI_MCP_BRIDGE_PROMPT } from '@/modules/common/hapiMcpBridgePrompt';
 
 class GeminiRemoteLauncher extends RemoteLauncherBase {
     private readonly session: GeminiSession;
@@ -23,6 +24,7 @@ class GeminiRemoteLauncher extends RemoteLauncherBase {
     private displayPermissionMode: PermissionMode | null = null;
     private currentBackendModel: string | null = null;
     private setModelSupported: boolean | undefined = undefined;
+    private instructionsSent = false;
 
     constructor(session: GeminiSession, opts: { model?: string; hookSettingsPath?: string }) {
         super(process.env.DEBUG ? session.logPath : undefined);
@@ -162,9 +164,15 @@ class GeminiRemoteLauncher extends RemoteLauncherBase {
             this.applyDisplayMode(batch.mode.permissionMode, batch.mode.model);
             messageBuffer.addMessage(batch.message, 'user');
 
+            let messageText = batch.message;
+            if (!this.instructionsSent) {
+                messageText = `${HAPI_MCP_BRIDGE_PROMPT}\n\n${messageText}`;
+                this.instructionsSent = true;
+            }
+
             const promptContent: PromptContent[] = [{
                 type: 'text',
-                text: batch.message
+                text: messageText
             }];
 
             session.onThinkingChange(true);
@@ -239,6 +247,9 @@ class GeminiRemoteLauncher extends RemoteLauncherBase {
                 break;
             case 'error':
                 this.messageBuffer.addMessage(message.message, 'status');
+                break;
+            case 'generated_image':
+                this.messageBuffer.addMessage(`Generated image: ${message.fileName}`, 'assistant');
                 break;
             case 'turn_complete':
                 this.messageBuffer.addMessage('Turn complete', 'status');
