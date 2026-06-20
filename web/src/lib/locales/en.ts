@@ -247,6 +247,8 @@ export default {
   'newSession.model.loadFailed': 'Failed to load models',
   'newSession.model.selectVariant': 'Select variant',
   'newSession.model.cursorUnavailable': 'No Cursor models yet. Start a Cursor session once, or use Default.',
+  'newSession.model.custom.placeholder': 'Enter model ID (e.g. claude-sonnet-4-6)',
+  'newSession.model.custom.required': 'Please enter a custom model ID',
   'newSession.opencodeModel.loading': 'Discovering OpenCode models…',
   'newSession.opencodeModel.loadFailed': 'Failed to load OpenCode models',
   'newSession.opencodeModel.retry': 'Retry',

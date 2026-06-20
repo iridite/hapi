@@ -28,6 +28,7 @@ export const MODEL_OPTIONS: Record<AgentType, { value: string; label: string }[]
     claude: [
         { value: 'auto', label: 'Default' },
         ...modelPresetOptions(CLAUDE_MODEL_PRESETS, CLAUDE_MODEL_LABELS),
+        { value: 'custom', label: 'Custom' },
     ],
     codex: [
         { value: 'auto', label: 'Default' },

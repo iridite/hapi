@@ -72,6 +72,7 @@ export function NewSession(props: {
     const [isDirectoryFocused, setIsDirectoryFocused] = useState(false)
     const [agent, setAgent] = useState<AgentType>(loadPreferredAgent)
     const [model, setModel] = useState('auto')
+    const [customModel, setCustomModel] = useState('')
     const [cursorSelectedBase, setCursorSelectedBase] = useState('auto')
     const pendingCursorBaseRef = useRef<string | null>(null)
     const [effort, setEffort] = useState<ClaudeEffort>('auto')
@@ -94,6 +95,7 @@ export function NewSession(props: {
     useEffect(() => {
         setEffort('auto')
         setModelReasoningEffort('default')
+        setCustomModel('')
         if (agent !== 'cursor') {
             setModel('auto')
             setCursorSelectedBase('auto')
@@ -565,9 +567,17 @@ export function NewSession(props: {
                 return
             }
 
+            const trimmedCustomModel = customModel.trim()
+            if (agent === 'claude' && model === 'custom' && !trimmedCustomModel) {
+                haptic.notification('error')
+                setError(t('newSession.model.custom.required'))
+                return
+            }
             const resolvedModel = agent === 'opencode'
                 ? (opencodeSelectedModel ?? undefined)
-                : (model !== 'auto' ? model : undefined)
+                : agent === 'claude' && model === 'custom'
+                    ? trimmedCustomModel
+                    : (model !== 'auto' ? model : undefined)
             const resolvedEffort = agent === 'claude' && effort !== 'auto' ? effort : undefined
             const resolvedModelReasoningEffort = (agent === 'codex' || agent === 'opencode') && modelReasoningEffort !== 'default'
                 ? modelReasoningEffort
@@ -706,6 +716,7 @@ export function NewSession(props: {
                     <ModelSelector
                         agent={agent}
                         model={model}
+                        customModel={customModel}
                         options={
                             agent === 'codex'
                                 ? codexModelOptions
@@ -720,6 +731,7 @@ export function NewSession(props: {
                             ? `${t('newSession.model.loadFailed')}: ${codexModelsState.error}`
                             : null}
                         onModelChange={setModel}
+                        onCustomModelChange={setCustomModel}
                     />
                 )
             )}

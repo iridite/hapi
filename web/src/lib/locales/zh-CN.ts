@@ -251,6 +251,8 @@ export default {
   'newSession.model.loadFailed': '加载模型失败',
   'newSession.model.selectVariant': '选择变体',
   'newSession.model.cursorUnavailable': '暂无 Cursor 模型列表。请先运行一次 Cursor 会话，或使用默认模型。',
+  'newSession.model.custom.placeholder': '输入模型 ID（如 claude-sonnet-4-6）',
+  'newSession.model.custom.required': '请输入自定义模型 ID',
   'newSession.opencodeModel.loading': '正在发现 OpenCode 模型…',
   'newSession.opencodeModel.loadFailed': '加载 OpenCode 模型失败',
   'newSession.opencodeModel.retry': '重试',

@@ -15,6 +15,7 @@ import { writeRunnerState, RunnerLocallyPersistedState, readRunnerState, acquire
 import { getCliArgs } from '@/utils/cliArgs';
 import { isProcessAlive, isWindows, killProcess, killProcessByChildProcess } from '@/utils/process';
 import { PERMISSION_MODES } from '@hapi/protocol/modes';
+import { isClaudeModelPreset } from '@hapi/protocol';
 import { withRetry } from '@/utils/time';
 import { isRetryableConnectionError } from '@/utils/errorUtils';
 
@@ -409,6 +410,16 @@ export async function startRunner(options: { workspaceRoots?: string[] } = {}): 
             HAPI_WORKTREE_PATH: worktreeInfo.worktreePath,
             HAPI_WORKTREE_CREATED_AT: String(worktreeInfo.createdAt)
           };
+        }
+
+        // Custom model: if a non-preset model ID is given for Claude,
+        // inject it via ANTHROPIC_DEFAULT_HAIKU_MODEL and rewrite model to 'haiku'
+        if ((agent === 'claude' || !agent) && options.model && !isClaudeModelPreset(options.model) && options.model !== 'auto') {
+          extraEnv = {
+            ...extraEnv,
+            ANTHROPIC_DEFAULT_HAIKU_MODEL: options.model
+          };
+          options = { ...options, model: 'haiku' };
         }
 
         const args = buildCliArgs(agent, options, yolo);
