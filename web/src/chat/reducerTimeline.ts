@@ -816,7 +816,7 @@ export function reduceTimeline(
                         createdAt: msg.createdAt,
                         invokedAt: msg.invokedAt,
                         model: msg.model,
-                        event: { type: 'message', message: c.summary },
+                        event: { type: 'compact-summary', message: c.summary },
                         meta: msg.meta
                     })
                     continue

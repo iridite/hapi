@@ -185,6 +185,9 @@ export function getEventPresentation(event: AgentEvent): EventPresentation {
     if (event.type === 'error') {
         return { icon: '⚠️', text: typeof event.message === 'string' ? event.message : 'Error' }
     }
+    if (event.type === 'compact-summary') {
+        return { icon: null, text: typeof event.message === 'string' ? event.message : 'Summary' }
+    }
     if (event.type === 'message') {
         return { icon: null, text: typeof event.message === 'string' ? event.message : 'Message' }
     }

@@ -3,10 +3,18 @@ import { getEventPresentation } from '@/chat/presentation'
 import type { HappyChatMessageMetadata } from '@/lib/assistant-runtime'
 import { getConversationMessageAnchorId } from '@/chat/outline'
 import { MessageTimestamp } from '@/components/AssistantChat/messages/MessageTimestamp'
+import { useHideCompactSummary } from '@/hooks/useHideCompactSummary'
 
 export function HappySystemMessage() {
+    const { hideCompactSummary } = useHideCompactSummary()
     const role = useAssistantState(({ message }) => message.role)
     const messageId = useAssistantState(({ message }) => message.id)
+    const isCompactSummary = useAssistantState(({ message }) => {
+        if (message.role !== 'system') return false
+        const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
+        const event = custom?.kind === 'event' ? custom.event : undefined
+        return event?.type === 'compact-summary'
+    })
     const text = useAssistantState(({ message }) => {
         if (message.role !== 'system') return ''
         return message.content[0]?.type === 'text' ? message.content[0].text : ''
@@ -19,6 +27,7 @@ export function HappySystemMessage() {
     })
 
     if (role !== 'system') return null
+    if (isCompactSummary && hideCompactSummary) return null
 
     return (
         <MessagePrimitive.Root id={getConversationMessageAnchorId(messageId)} className="scroll-mt-4 py-1">

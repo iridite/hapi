@@ -579,6 +579,8 @@ export default {
   'settings.chat.terminalToolDisplay.detailed': '详细（显示输出预览）',
   'settings.chat.groupedToolBackground': '聚合 Tool Use 背景',
   'settings.chat.userMessageBackground': '用户消息背景',
+  'settings.chat.hideCompactSummary': '隐藏自动压缩摘要',
+  'settings.chat.hideCompactSummary.desc': '当 Claude Code 自动压缩对话上下文时，在聊天中隐藏摘要文本（与原生 Claude Code CLI 行为一致）。',
   'settings.chat.surfaceColor.default': '默认颜色',
   'settings.chat.surfaceColor.softBlue': '柔和蓝',
   'settings.chat.surfaceColor.softGreen': '柔和绿',

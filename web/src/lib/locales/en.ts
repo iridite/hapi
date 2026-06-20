@@ -575,6 +575,8 @@ export default {
   'settings.chat.terminalToolDisplay.detailed': 'Detailed (show output preview)',
   'settings.chat.groupedToolBackground': 'Grouped Tool Use Background',
   'settings.chat.userMessageBackground': 'User Message Background',
+  'settings.chat.hideCompactSummary': 'Hide auto-compact summary',
+  'settings.chat.hideCompactSummary.desc': 'When Claude Code compacts the conversation context, hide the summary text in chat (like the native Claude Code CLI).',
   'settings.chat.surfaceColor.default': 'Default color',
   'settings.chat.surfaceColor.softBlue': 'Soft blue',
   'settings.chat.surfaceColor.softGreen': 'Soft green',

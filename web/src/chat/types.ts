@@ -15,6 +15,7 @@ export type UsageData = {
 
 export type AgentEvent =
     | { type: 'switch'; mode: 'local' | 'remote' }
+    | { type: 'compact-summary'; message: string }
     | { type: 'message'; message: string }
     | { type: 'error'; message: string }
     | { type: 'title-changed'; title: string }
