@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC, type PropsWithChildren } from 'react'
+import { useState, useEffect, useRef, type FC, type PropsWithChildren } from 'react'
 import { useMessage } from '@assistant-ui/react'
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown'
 import { cn } from '@/lib/utils'
@@ -58,7 +58,9 @@ export const Reasoning: FC = () => {
 }
 
 export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
-    const [isOpen, setIsOpen] = useState(getInitialReasoningDefaultOpen)
+    const defaultOpen = getInitialReasoningDefaultOpen()
+    const [isOpen, setIsOpen] = useState(defaultOpen)
+    const userToggled = useRef(false)
 
     const message = useMessage()
     const isStreaming = message.status?.type === 'running'
@@ -68,14 +70,16 @@ export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
     useEffect(() => {
         if (isStreaming) {
             setIsOpen(true)
+        } else if (!defaultOpen && !userToggled.current) {
+            setIsOpen(false)
         }
-    }, [isStreaming])
+    }, [isStreaming, defaultOpen])
 
     return (
         <div className="aui-reasoning-group my-3 overflow-hidden rounded-2xl bg-[var(--app-reasoning-bg)]">
             <button
                 type="button"
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => { userToggled.current = true; setIsOpen(!isOpen) }}
                 className={cn(
                     'flex w-full items-center gap-1.5 px-3.5 py-2.5 text-left text-xs font-medium',
                     'text-[var(--app-hint)] hover:text-[var(--app-fg)]',
