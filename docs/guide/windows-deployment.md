@@ -177,4 +177,4 @@ Stop-Service hapi-hub -Force
 
 - [x] 将 runner 纳入 NSSM 服务，解决 hub 重启后 runner 断连问题
 - [ ] 下载时使用 GitHub 代理（国内网速优化）
-- [ ] 更新后发送桌面通知或写入 Windows 事件日志
+- [x] 更新后写入 Windows 事件日志（Application log，Source: hapi-updater）
