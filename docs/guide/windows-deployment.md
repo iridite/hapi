@@ -81,15 +81,18 @@ WshShell.Run "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hid
 
 ### 5. 注册自动更新计划任务
 
+使用实际登录账户（不要用 SYSTEM，SYSTEM 无法访问用户级 Mihomo 代理且无法连 GitHub API）：
+
 ```powershell
-$action = New-ScheduledTaskAction `
-    -Execute 'powershell.exe' `
-    -Argument '-NonInteractive -ExecutionPolicy Bypass -File "C:\Users\<user>\hapi\update-hapi.ps1"'
+$user     = '<user>'          # e.g. ollama
+$password = '<password>'      # 账户密码
+$action   = New-ScheduledTaskAction -Execute 'powershell.exe' `
+    -Argument "-NonInteractive -ExecutionPolicy Bypass -File `"C:\Users\$user\hapi\update-hapi.ps1`""
 $trigger  = New-ScheduledTaskTrigger -Daily -At '04:00'
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 15) -StartWhenAvailable -RunOnlyIfNetworkAvailable
-$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -RunLevel Highest
 Register-ScheduledTask -TaskName 'hapi-auto-update' -TaskPath '\hapi\' `
-    -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
+    -Action $action -Trigger $trigger -Settings $settings `
+    -RunLevel Highest -User $user -Password $password -Force
 ```
 
 ## 自动更新脚本（update-hapi.ps1）
@@ -173,8 +176,24 @@ Stop-Service hapi-hub -Force
 | Session 日志 | `~/.hapi/logs/<日期>-pid-<pid>.log` |
 | 自动更新日志 | `~/.hapi/logs/auto-update.log` |
 
+### 计划任务不执行 / 日志无输出
+
+**原因 1**：任务以 SYSTEM 账户运行，SYSTEM 无法访问用户级 Mihomo proxy，也没有 `gh auth` 认证，导致 GitHub API 调用失败。
+**修复**：任务改用实际登录账户（`Password` logon type），见步骤 5。
+
+**原因 2**：脚本里用反引号续行（`` ` ``）写在嵌套 try/catch 内，Windows PowerShell 5.1 解析失败（PS7 不报错），导致脚本在第一行日志之前就退出。
+**修复**：改用 splatting（`@params`）消掉所有嵌套 catch 内的反引号续行。
+
+### SYSTEM 账户无法访问 GitHub API
+
+症状：日志报 `API rate limit exceeded` 或 `gh auth login` 提示。
+
+原因：SYSTEM 账户无用户 profile，既没有 Mihomo proxy 设置，也没有 `gh` CLI 的 token。
+
+修复：将计划任务 principal 改为实际用户账户（见步骤 5）。
+
 ## 待改进项
 
 - [x] 将 runner 纳入 NSSM 服务，解决 hub 重启后 runner 断连问题
-- [ ] 下载时使用 GitHub 代理（国内网速优化）
+- [x] 下载时使用 GitHub 代理（ghfast.top 镜像，国内可达）
 - [x] 更新后写入 Windows 事件日志（Application log，Source: hapi-updater）
