@@ -29,6 +29,7 @@ export const RPC_METHODS = {
     ListCursorModels: 'listCursorModels',
     ListPiModels: 'listPiModels',
     ListOpencodeModels: 'listOpencodeModels',
+    ListClaudeModels: 'listClaudeModels',
     ListOpencodeModelsForCwd: 'listOpencodeModelsForCwd',
     ListOpencodeReasoningEffortOptions: 'listOpencodeReasoningEffortOptions'
 } as const

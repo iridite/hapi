@@ -25,6 +25,8 @@ import { MessageService } from './messageService'
 import {
     RpcGateway,
     RpcTargetMissingError,
+    type RpcClaudeModel,
+    type RpcListClaudeModelsResponse,
     type RpcCodexModel,
     type RpcCommandResponse,
     type RpcDeleteUploadResponse,
@@ -46,6 +48,8 @@ export type { Session, SyncEvent } from '@hapi/protocol/types'
 export type { Machine } from './machineCache'
 export type { SyncEventListener } from './eventPublisher'
 export type {
+    RpcClaudeModel,
+    RpcListClaudeModelsResponse,
     RpcCodexModel,
     RpcCommandResponse,
     RpcDeleteUploadResponse,
@@ -1657,6 +1661,10 @@ export class SyncEngine {
         error?: string
     }> {
         return await this.rpcGateway.listSkills(sessionId, flavor)
+    }
+
+    async listClaudeModelsForMachine(machineId: string): Promise<RpcListClaudeModelsResponse> {
+        return await this.rpcGateway.listClaudeModelsForMachine(machineId)
     }
 
     async listCodexModelsForSession(sessionId: string): Promise<RpcListCodexModelsResponse> {

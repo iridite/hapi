@@ -4,6 +4,7 @@ import type { Machine } from '@/types/api'
 import { usePlatform } from '@/hooks/usePlatform'
 import { useMachinePathsExists } from '@/hooks/useMachinePathsExists'
 import { useSpawnSession } from '@/hooks/mutations/useSpawnSession'
+import { useClaudeModelsForMachine } from '@/hooks/queries/useClaudeModelsForMachine'
 import { useCodexModels } from '@/hooks/queries/useCodexModels'
 import { useCursorModelsForMachine } from '@/hooks/queries/useCursorModelsForMachine'
 import { useOpencodeModelsForCwd } from '@/hooks/queries/useOpencodeModelsForCwd'
@@ -185,6 +186,21 @@ export function NewSession(props: {
         () => (machineId ? props.machines.find((machine) => machine.id === machineId) ?? null : null),
         [machineId, props.machines]
     )
+    const claudeModelsState = useClaudeModelsForMachine({
+        api: props.api,
+        machineId,
+        enabled: (agent === 'claude' || !agent) && Boolean(machineId)
+    })
+    const claudeModelOptions = useMemo(() => {
+        const options = [{ value: 'auto', label: 'Default' }]
+        for (const m of claudeModelsState.models) {
+            options.push({ value: m.id, label: m.name })
+        }
+        if (!options.some((o) => o.value === 'custom')) {
+            options.push({ value: 'custom', label: 'Custom' })
+        }
+        return options
+    }, [claudeModelsState.models])
     const codexModelsState = useCodexModels({
         api: props.api,
         machineId,
@@ -720,16 +736,26 @@ export function NewSession(props: {
                         options={
                             agent === 'codex'
                                 ? codexModelOptions
-                                : undefined
+                                : agent === 'claude'
+                                    ? claudeModelOptions
+                                    : undefined
                         }
                         isDisabled={
                             isFormDisabled
                             || (agent === 'codex' && Boolean(codexModelsState.error))
+                            || (agent === 'claude' && Boolean(claudeModelsState.error))
                         }
-                        isLoading={agent === 'codex' && codexModelsState.isLoading}
-                        error={agent === 'codex' && codexModelsState.error
-                            ? `${t('newSession.model.loadFailed')}: ${codexModelsState.error}`
-                            : null}
+                        isLoading={
+                            (agent === 'codex' && codexModelsState.isLoading)
+                            || (agent === 'claude' && claudeModelsState.isLoading)
+                        }
+                        error={
+                            agent === 'codex' && codexModelsState.error
+                                ? `${t('newSession.model.loadFailed')}: ${codexModelsState.error}`
+                                : agent === 'claude' && claudeModelsState.error
+                                    ? `${t('newSession.model.loadFailed')}: ${claudeModelsState.error}`
+                                    : null
+                        }
                         onModelChange={setModel}
                         onCustomModelChange={setCustomModel}
                     />

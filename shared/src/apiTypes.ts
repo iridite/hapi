@@ -359,6 +359,21 @@ export type CodexModelsResponse = {
 
 export type ListCodexModelsResponse = CodexModelsResponse
 
+export type ClaudeModelSummary = {
+    id: string
+    name: string
+    description?: string
+    isPreset: boolean
+}
+
+export type ClaudeModelsResponse = {
+    success: boolean
+    models?: ClaudeModelSummary[]
+    error?: string
+}
+
+export type ListClaudeModelsResponse = ClaudeModelsResponse
+
 export type OpencodeModelSummary = {
     modelId: string
     name?: string
