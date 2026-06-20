@@ -2,6 +2,7 @@ import { useState, useEffect, type FC, type PropsWithChildren } from 'react'
 import { useMessage } from '@assistant-ui/react'
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown'
 import { cn } from '@/lib/utils'
+import { getInitialReasoningDefaultOpen } from '@/hooks/useReasoningDefaultOpen'
 import {
     MARKDOWN_CLASSNAME,
     MARKDOWN_COMPONENTS_BY_LANGUAGE,
@@ -57,7 +58,7 @@ export const Reasoning: FC = () => {
 }
 
 export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(getInitialReasoningDefaultOpen)
 
     const message = useMessage()
     const isStreaming = message.status?.type === 'running'

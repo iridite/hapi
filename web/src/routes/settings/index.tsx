@@ -21,6 +21,7 @@ import { getTerminalToolDisplayModeOptions, useTerminalToolDisplayMode, type Ter
 import { getSessionListStatusModeOptions, useSessionListStatusMode, type SessionListStatusMode } from '@/hooks/useSessionListStatusMode'
 import { useShowActiveSessionsOnly } from '@/hooks/useShowActiveSessionsOnly'
 import { useHideCompactSummary } from '@/hooks/useHideCompactSummary'
+import { useReasoningDefaultOpen } from '@/hooks/useReasoningDefaultOpen'
 import {
     MAX_SESSION_PREVIEW_LIMIT,
     MIN_SESSION_PREVIEW_LIMIT,
@@ -402,6 +403,7 @@ export default function SettingsPage() {
     const { sessionListStatusMode, setSessionListStatusMode } = useSessionListStatusMode()
     const { showActiveSessionsOnly, setShowActiveSessionsOnly } = useShowActiveSessionsOnly()
     const { hideCompactSummary, setHideCompactSummary } = useHideCompactSummary()
+    const { reasoningDefaultOpen, setReasoningDefaultOpen } = useReasoningDefaultOpen()
     const {
         toolGroupBackground,
         userMessageBackground,
@@ -1100,6 +1102,23 @@ export default function SettingsPage() {
                                     onChange={(e) => setHideCompactSummary(e.target.checked)}
                                     className="peer sr-only"
                                     aria-label={t('settings.chat.hideCompactSummary')}
+                                />
+                                <span className="absolute inset-0 rounded-full bg-[var(--app-border)] transition-colors peer-checked:bg-[var(--app-link)]" />
+                                <span className="absolute left-0.5 h-4 w-4 rounded-full bg-[var(--app-bg)] transition-transform peer-checked:translate-x-4" />
+                            </label>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 px-3 py-3">
+                            <div className="flex flex-col">
+                                <span className="text-[var(--app-fg)]">{t('settings.chat.reasoningDefaultOpen')}</span>
+                                <span className="text-xs text-[var(--app-hint)]">{t('settings.chat.reasoningDefaultOpen.desc')}</span>
+                            </div>
+                            <label className="relative inline-flex h-5 w-9 shrink-0 items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={reasoningDefaultOpen}
+                                    onChange={(e) => setReasoningDefaultOpen(e.target.checked)}
+                                    className="peer sr-only"
+                                    aria-label={t('settings.chat.reasoningDefaultOpen')}
                                 />
                                 <span className="absolute inset-0 rounded-full bg-[var(--app-border)] transition-colors peer-checked:bg-[var(--app-link)]" />
                                 <span className="absolute left-0.5 h-4 w-4 rounded-full bg-[var(--app-bg)] transition-transform peer-checked:translate-x-4" />

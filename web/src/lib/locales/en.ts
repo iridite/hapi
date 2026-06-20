@@ -577,6 +577,8 @@ export default {
   'settings.chat.userMessageBackground': 'User Message Background',
   'settings.chat.hideCompactSummary': 'Hide auto-compact summary',
   'settings.chat.hideCompactSummary.desc': 'When Claude Code compacts the conversation context, hide the summary text in chat (like the native Claude Code CLI).',
+  'settings.chat.reasoningDefaultOpen': 'Expand reasoning by default',
+  'settings.chat.reasoningDefaultOpen.desc': 'Auto-expand the reasoning panel when a message loads. When off, reasoning is collapsed and can be opened manually.',
   'settings.chat.surfaceColor.default': 'Default color',
   'settings.chat.surfaceColor.softBlue': 'Soft blue',
   'settings.chat.surfaceColor.softGreen': 'Soft green',

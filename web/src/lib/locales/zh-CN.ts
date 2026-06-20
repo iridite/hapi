@@ -581,6 +581,8 @@ export default {
   'settings.chat.userMessageBackground': '用户消息背景',
   'settings.chat.hideCompactSummary': '隐藏自动压缩摘要',
   'settings.chat.hideCompactSummary.desc': '当 Claude Code 自动压缩对话上下文时，在聊天中隐藏摘要文本（与原生 Claude Code CLI 行为一致）。',
+  'settings.chat.reasoningDefaultOpen': '默认展开 Reasoning',
+  'settings.chat.reasoningDefaultOpen.desc': '消息加载时自动展开 Reasoning 面板。关闭后默认折叠，可手动点击展开。',
   'settings.chat.surfaceColor.default': '默认颜色',
   'settings.chat.surfaceColor.softBlue': '柔和蓝',
   'settings.chat.surfaceColor.softGreen': '柔和绿',
