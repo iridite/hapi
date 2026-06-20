@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export const DEFAULT_REASONING_DEFAULT_OPEN = false
+export type ReasoningDisplayMode = 'default' | 'always-open' | 'always-closed'
+
+export const DEFAULT_REASONING_DISPLAY_MODE: ReasoningDisplayMode = 'default'
 
 function getStorageKey(): string {
-    return 'hapi-reasoning-default-open'
+    return 'hapi-reasoning-display-mode'
 }
 
 function isBrowser(): boolean {
@@ -33,43 +35,42 @@ function safeRemoveItem(key: string): void {
     } catch {}
 }
 
-function parseReasoningDefaultOpen(raw: string | null): boolean {
-    if (raw === 'true') return true
-    if (raw === 'false') return false
-    return DEFAULT_REASONING_DEFAULT_OPEN
+function parseMode(raw: string | null): ReasoningDisplayMode {
+    if (raw === 'always-open' || raw === 'always-closed') return raw
+    return DEFAULT_REASONING_DISPLAY_MODE
 }
 
-export function getInitialReasoningDefaultOpen(): boolean {
-    return parseReasoningDefaultOpen(safeGetItem(getStorageKey()))
+export function getReasoningDisplayMode(): ReasoningDisplayMode {
+    return parseMode(safeGetItem(getStorageKey()))
 }
 
-export function useReasoningDefaultOpen(): {
-    reasoningDefaultOpen: boolean
-    setReasoningDefaultOpen: (value: boolean) => void
+export function useReasoningDisplayMode(): {
+    reasoningDisplayMode: ReasoningDisplayMode
+    setReasoningDisplayMode: (value: ReasoningDisplayMode) => void
 } {
-    const [reasoningDefaultOpen, setReasoningDefaultOpenState] = useState<boolean>(getInitialReasoningDefaultOpen)
+    const [mode, setModeState] = useState<ReasoningDisplayMode>(getReasoningDisplayMode)
 
     useEffect(() => {
         if (!isBrowser()) return
 
         const onStorage = (event: StorageEvent) => {
             if (event.key !== getStorageKey()) return
-            setReasoningDefaultOpenState(parseReasoningDefaultOpen(event.newValue))
+            setModeState(parseMode(event.newValue))
         }
 
         window.addEventListener('storage', onStorage)
         return () => window.removeEventListener('storage', onStorage)
     }, [])
 
-    const setReasoningDefaultOpen = useCallback((value: boolean) => {
-        setReasoningDefaultOpenState(value)
+    const setReasoningDisplayMode = useCallback((value: ReasoningDisplayMode) => {
+        setModeState(value)
 
-        if (value === DEFAULT_REASONING_DEFAULT_OPEN) {
+        if (value === DEFAULT_REASONING_DISPLAY_MODE) {
             safeRemoveItem(getStorageKey())
         } else {
-            safeSetItem(getStorageKey(), String(value))
+            safeSetItem(getStorageKey(), value)
         }
     }, [])
 
-    return { reasoningDefaultOpen, setReasoningDefaultOpen }
+    return { reasoningDisplayMode: mode, setReasoningDisplayMode }
 }

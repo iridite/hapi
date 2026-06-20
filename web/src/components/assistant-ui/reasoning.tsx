@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type FC, type PropsWithChildren } from 're
 import { useMessage } from '@assistant-ui/react'
 import { MarkdownTextPrimitive } from '@assistant-ui/react-markdown'
 import { cn } from '@/lib/utils'
-import { getInitialReasoningDefaultOpen } from '@/hooks/useReasoningDefaultOpen'
+import { getReasoningDisplayMode } from '@/hooks/useReasoningDefaultOpen'
 import {
     MARKDOWN_CLASSNAME,
     MARKDOWN_COMPONENTS_BY_LANGUAGE,
@@ -58,8 +58,8 @@ export const Reasoning: FC = () => {
 }
 
 export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
-    const defaultOpen = getInitialReasoningDefaultOpen()
-    const [isOpen, setIsOpen] = useState(defaultOpen)
+    const mode = getReasoningDisplayMode()
+    const [isOpen, setIsOpen] = useState(mode === 'always-open')
     const userToggled = useRef(false)
 
     const message = useMessage()
@@ -68,12 +68,19 @@ export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
         && message.content[message.content.length - 1]?.type === 'reasoning'
 
     useEffect(() => {
-        if (isStreaming) {
+        if (mode === 'always-open') {
             setIsOpen(true)
-        } else if (!defaultOpen && !userToggled.current) {
-            setIsOpen(false)
+        } else if (mode === 'always-closed') {
+            if (!userToggled.current) setIsOpen(false)
+        } else {
+            // default: open while streaming, collapse after
+            if (isStreaming) {
+                setIsOpen(true)
+            } else if (!userToggled.current) {
+                setIsOpen(false)
+            }
         }
-    }, [isStreaming, defaultOpen])
+    }, [isStreaming, mode])
 
     return (
         <div className="aui-reasoning-group my-3 overflow-hidden rounded-2xl bg-[var(--app-reasoning-bg)]">
